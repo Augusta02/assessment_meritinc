@@ -168,7 +168,7 @@ model. Both metrics improve consistently with no sign of overfitting.*
 - Setup: I trained a the UNet model using standard Cross Entropy loss on all pixels and compared it against the best performing Partial CE configuration from our Experiement 1. Both models use the same architecture,
   optimiser. learning rate and number of epochs, point mask argument was ignored for loss function in the full supervision model.
 - Results:
-  
+
 | Condition | Best Validation mIoU
 | ------ | ------ | -------
 | Full Supervion (all pixels) |  0.5802
@@ -176,11 +176,11 @@ model. Both metrics improve consistently with no sign of overfitting.*
 | Gap | 0.0698
 | Partial CE recovery |  88.0%
   
-  **Visualise Experiment 2**
-  
-  ![assessment_meritinc](bar_chart.jpeg)
+**Visualise Experiment 2**
 
-  *Best validation mIoU for full supervision (0.5802) and Partial CE with 10 points per class (0.5104). Partial CE recovers 88% of full supervision performance using 0.006% of available pixel labels.*
+![assessment_meritinc](bar_chart.png)
+
+*Best validation mIoU for full supervision (0.5802) and Partial CE with 10 points per class (0.5104). Partial CE recovers 88% of full supervision performance using 0.006% of available pixel labels.*
 
 ![Experiment 2 Training Curves](experiment_2.png)
 
