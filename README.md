@@ -108,17 +108,18 @@ Evaluation was always performed against the full ground truth mask, not the spar
 ## Experiments
 I designed two experiments to explore factors that affect the perfomance of Partical Cross Entropy training.
 
-- Experiment 1:
-      - Goal: Understand how the number of labeled points per class affects segmentation quality
-      - Hypothesis: More labeled points per class should give the model more signal to learn from, resthis should return a higher mean IoU. I expect an incraing trend with diminishing return at higher densities.
-      - Setup: Train the UNet model on number of points variable with point densities as [1,3,5,10]. All other parameters were assigned to constant value [!Training Config]
-      - Results:
-            | Point Per Class | Validation mIoU
-            | ------ | ------
-            | 1 |  0.4393
-            | 3 | 0.4830
-            | 5 |  0.4199
-            | 10 |  0.5104
+## Experiment 1:
+- Goal: Understand how the number of labeled points per class affects segmentation quality
+- Hypothesis: More labeled points per class should give the model more signal to learn from, resthis should return a higher mean IoU. I expect an incraing trend with diminishing return at higher densities.
+- Setup: Train the UNet model on number of points variable with point densities as [1,3,5,10]. All other parameters were assigned to constant value [!Training Config]
+- Results:
+  
+    | Point Per Class | Validation mIoU
+    | ------ | ------
+    | 1 |  0.4393
+    | 3 | 0.4830
+    | 5 |  0.4199
+    | 10 |  0.5104
 
   **Validation mIoU across point per class**
   ![assessment_meritinc](best_val.png)
