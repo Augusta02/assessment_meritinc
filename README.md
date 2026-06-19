@@ -129,7 +129,7 @@ I designed two experiments to explore factors that affect the perfomance of Part
   A key insight from this experiment shows that a single point in a class produces a model that achieves over 43% mIoU, indicating that Partial CE can extract meanignful signal from extremely limited annotations.
 
 
-  - Experimen 2:
+  - Experiment 2:
     - Goal: Measure how much performance is lost by using sparse point labels instead of a complete dense annotation.
     - Hypothesis: Full supervision will outperfomr Partial CE because it recieves more gradient signal from every pixel. Teh gap between the two will help us quantify the cost of sparse annotation.
     - Setup: I trained a the UNet model using standard Cross Entropy loss on all pixels and compared it against the best performing Partial CE configuration from our Experiement 1. Both models use the same architecture,
@@ -141,8 +141,53 @@ I designed two experiments to explore factors that affect the perfomance of Part
             | Partial CE (10pts/class) | 0.5104
             | Gap | 0.0698
             | Partial CE recovery |  88.0%
+        **Visualise Experiment 2**
+      ![assessment_meritinc](expeiement_2.jpeg)
+
+
+    Full supervison achieves the best validation mIoU of 0.5802 while Partial CE achieves 0.5104, with a gao of 0.069, this implies that PArtial CE recovers at 88% of the performace are achieveable with complete dense annotation, while using only 60 labeled pixels per image instead of 65536 (the number of pixels in 256x256 image).
+
+    The loss curves in our plot indicates another interesting pattern, the full supervision of the model shows higher variance across epochs, with validation loss jumping noticably between 2 and 9 epochs. Partial CE
+    produces a much shoother and more stable loss trajectory, this is due to gradients in full supervison are compyuted from every pixel including ambiguous boundary regions which can intreoduce noise while Partial CE
+    computes its gradients only from a small set therefore not exposed to the noise.
+    
+    Both models show healthy training behaviour with no sign of overfitting: validation loss stays close to training loss throughout, and mIoU improves consistently.
 
     
+    ## Qualitative Results
+
+    I used the best Partial CE model on our test data, to see how it would be handling unseen data and ran inference on four inages to visually inspect the quality of model prediction.
+    - For Test Sample 1:
+     ![assessment_meritinc](test_sample.jpeg)
+      Its mIoU is 0.1865, the ground truth contains only water and background , the model correctly identifies the water body but incorrectly predicts Barren, Road and Agriculture in
+      areas that the ground truth masks as Background.
+    - For Test Sample 2-4
+    ![Test Sample 2](test_3.png)
+ 
+    Test Sample 2 (mIoU: 0.4752): The model correctly identifies the large agriculture region (orange), the water channel (blue), road boundaries (yellow), and building clusters (red). This is the strongest of the four     test samples.
+
+      The qualitative results reveal a consistent pattern. The model performs well in areas containing multiple visually distinct classes, where each land cover type has a clear and different appearance. Test Sample 2 demonstrates this: water, roads, buildings, and farmland look visually different from each other, and the model's sparse training points were sufficient to learn these distinctions.
+    
+    The model struggles on scenes where a single dominant class covers most of the image and contains internal visual diversity. In Test Sample 3 (mIoU: 0.1605) and Test Sample 4 (mIoU: 0.2679), the ground truth is predominantly Agriculture. However, agricultural fields contain many different crop types, growth stages, greenhouse structures, and shadows, which look visually distinct from each other. With only 10 labeled points in the Agriculture region, the model sees only a fraction of this visual diversity and misclassifies many Agriculture sub-regions as Forest, Barren, or Road.
+     A human labeller clicking 10 points in a large agricultural scene will naturally click on only a small sample of the visual variation present. The model therefore cannot learn that all of those variations belong to the same class without seeing more of them.
+
+    ## Summary
+ 
+    | | Value |
+    |---|---|
+    | Total images | 4,191 |
+    | Image size (training) | 256x256 |
+    | Model | UNet (6.8M parameters) |
+    | Loss function | Partial Cross-Entropy |
+    | Best point density | 10 pts/class |
+    | Best Partial CE mIoU | 0.5104 |
+    | Full supervision mIoU | 0.5802 |
+    | Performance recovery | 88.0% |
+    | Label coverage (10 pts) | 0.006% of pixels |
+ 
+Partial Cross-Entropy is an effective approach to weakly-supervised segmentation. By computing the loss only over labeled pixels and ignoring everything else, the model learns meaningful segmentation patterns from a tiny fraction of the available annotation. Using 10 labeled points per class, approximately 60 pixels per image, the model recovers 88% of the performance achievable with full dense annotation.
+ 
+The primary failure mode is visually uniform scenes dominated by a single class with high intra-class variation. Future work could address this through class-balanced sampling strategies that select points covering more of the visual diversity within each class, or through semi-supervised methods that use unlabeled pixels to regularise the model's predictions.
       
   
             
