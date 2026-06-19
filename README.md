@@ -134,7 +134,7 @@ I designed two experiments to explore factors that affect the performance of Par
 
 ### Baseline Training (5 points per class)
 
-Before running the ablation experiments, I trained a baseline model with 
+Before running the experiments, I trained a baseline model with 
 5 points per class for 10 epochs to confirm the training pipeline was 
 working correctly.
 
