@@ -136,14 +136,16 @@ I designed two experiments to explore factors that affect the perfomance of Part
 - Setup: I trained a the UNet model using standard Cross Entropy loss on all pixels and compared it against the best performing Partial CE configuration from our Experiement 1. Both models use the same architecture,
   optimiser. learning rate and number of epochs, point mask argument was ignored for loss function in the full supervision model.
 - Results:
-    | Condition | Best Validation mIoU
-    | ------ | ------ | -------
-    | Full Supervion (all pixels) |  0.5802
-    | Partial CE (10pts/class) | 0.5104
-    | Gap | 0.0698
-    | Partial CE recovery |  88.0%
+  
+| Condition | Best Validation mIoU
+| ------ | ------ | -------
+| Full Supervion (all pixels) |  0.5802
+| Partial CE (10pts/class) | 0.5104
+| Gap | 0.0698
+| Partial CE recovery |  88.0%
   
   **Visualise Experiment 2**
+  
   ![assessment_meritinc](expeiement_2.jpeg)
 
 
@@ -166,7 +168,8 @@ I used the best Partial CE model on our test data, to see how it would be handli
   areas that the ground truth masks as Background.
   
 - **For Test Sample 2-4**
-![Test Sample 2](test_3.png)
+- 
+![assessment_meritinc](test_3.png)
 
 Test Sample 2 (mIoU: 0.4752): The model correctly identifies the large agriculture region (orange), the water channel (blue), road boundaries (yellow), and building clusters (red). This is the strongest of the four     test samples.
 
