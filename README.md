@@ -169,12 +169,12 @@ model. Both metrics improve consistently with no sign of overfitting.*
   optimiser. learning rate and number of epochs, point mask argument was ignored for loss function in the full supervision model.
 - Results:
 
-| Condition | Best Validation mIoU
-| ------ | ------ | -------
-| Full Supervion (all pixels) |  0.5802
-| Partial CE (10pts/class) | 0.5104
-| Gap | 0.0698
-| Partial CE recovery |  88.0%
+    | Condition | Best Validation mIoU
+    | ------ | ------ | -------
+    | Full Supervion (all pixels) |  0.5802
+    | Partial CE (10pts/class) | 0.5104
+    | Gap | 0.0698
+    | Partial CE recovery |  88.0%
   
 **Visualise Experiment 2**
 
