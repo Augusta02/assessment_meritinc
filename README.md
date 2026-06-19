@@ -74,7 +74,7 @@ from those pixels.
     
 ```
 | Loss Function | Pixels Used | Coverage
-| ------ | ------
+| ------ | ------ | ------
 | Standard Cross Entropy |  65,536 | 100% 
 | Partial CE (1 pts/class) | ~6 | 0.0092%
 | Partial CE (3 pts/class) | ~18 | 0.0275%
