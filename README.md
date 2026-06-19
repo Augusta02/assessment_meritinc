@@ -119,6 +119,30 @@ I designed two experiments to explore factors that affect the perfomance of Part
             | 3 | 0.4830
             | 5 |  0.4199
             | 10 |  0.5104
+
+  **Validation mIoU across point per class**
+  ![assessment_meritinc](best_val.png)
+
+  The results confirms our hypothesis, increasing points in each class improves mIoU from 0.44 to 0.51,the 10 point configuration perofms best.
+  The anomalu in point 5 compared to 3 point with mIoU 0.48 indicates a high variance inherent in sparse klabel training. It shows that specific pixels that happen to be sampled have stronger influence on what model learns   in each epoch.
+
+  A key insight from this experiment shows that a single point in a class produces a model that achieves over 43% mIoU, indicating that Partial CE can extract meanignful signal from extremely limited annotations.
+
+
+  - Experimen 2:
+    - Goal: Measure how much performance is lost by using sparse point labels instead of a complete dense annotation.
+    - Hypothesis: Full supervision will outperfomr Partial CE because it recieves more gradient signal from every pixel. Teh gap between the two will help us quantify the cost of sparse annotation.
+    - Setup: I trained a the UNet model using standard Cross Entropy loss on all pixels and compared it against the best performing Partial CE configuration from our Experiement 1. Both models use the same architecture,
+      optimiser. learning rate and number of epochs, point mask argument was ignored for loss function in the full supervision model.
+    - Results:
+            | Condition | Best Validation mIoU
+            | ------ | ------
+            | Full Supervion (all pixels) |  0.5802
+            | Partial CE (10pts/class) | 0.5104
+            | Gap | 0.0698
+            | Partial CE recovery |  88.0%
+      
+  
             
 
 
