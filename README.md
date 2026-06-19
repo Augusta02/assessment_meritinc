@@ -40,6 +40,9 @@ One important data preprocessing step was remapping the original mask values. Lo
 
 ``` mask = np.clip(mask - 1, 0, 6).astype(np.uint8) ```
 
+Images were resized from 1024x1024 to 256x256 during loading to reduce memory usage and speed up training without significantly changing the spatial structure of the land cover regions.
+
+
 ## Method
 
 ### Simulating Point Labels
@@ -93,6 +96,19 @@ I used the 4-level UNet with skip connections as the segmentation model, UNet wa
 spatial detail during decoding. 
 The encode progressively downsamples the input from 256x256 to 16x16 while learning increasing abstract features, the decoder then upsamples back to the original resolution, adding features from the encoder at each level
 through skip connections. 
+The spatial progression through the network is as follows:
+
+    Encoder: [B, 3, 256, 256] -> [B, 32, 128, 128] -> [B, 64, 64, 64] 
+             -> [B, 128, 32, 32] -> [B, 256, 16, 16]
+    Bridge:  [B, 256, 16, 16] -> [B, 512, 16, 16] -> [B, 256, 16, 16]
+    Decoder: [B, 256, 32, 32] -> [B, 128, 64, 64] 
+             -> [B, 64, 128, 128] -> [B, 32, 256, 256]
+
+A final 1x1 convolution maps the 32 decoder feature channels to 7 output 
+channels, one score per LoveDA class per pixel. The predicted class for 
+each pixel is obtained by taking the highest scoring class:
+
+    pred_classes = predictions.argmax(dim=1)
 
 The model has 6,857,319 trainable parameters, All parameters are updated during training but gradients flow only from the labeled pixels identified by the point mask
 
@@ -112,6 +128,17 @@ Evaluation was always performed against the full ground truth mask, not the spar
 
 ## Experiments
 I designed two experiments to explore factors that affect the perfomance of Partical Cross Entropy training.
+
+### Baseline Training (5 points per class)
+
+Before running the ablation experiments, I trained a baseline model with 
+5 points per class for 10 epochs to confirm the training pipeline was 
+working correctly.
+
+![assessment_meritinc](train_&_val.png)
+
+*Training and validation loss and mIoU across 10 epochs for the baseline 
+model. Both metrics improve consistently with no sign of overfitting.*
 
 ## Experiment 1:
 - Goal: Understand how the number of labeled points per class affects segmentation quality
@@ -172,8 +199,8 @@ I used the best Partial CE model on our test data, to see how it would be handli
   Its mIoU is 0.1865, the ground truth contains only water and background , the model correctly identifies the water body but incorrectly predicts Barren, Road and Agriculture in
   areas that the ground truth masks as Background.
   
-- **For Test Sample 2-4**
-![assessment_meritinc](test_3.jpeg)
+- **For Test Sample 2**
+![assessment_meritinc](test_2.jpeg)
 
 Test Sample 2 (mIoU: 0.4752): The model correctly identifies the large agriculture region (orange), the water channel (blue), road boundaries (yellow), and building clusters (red). This is the strongest of the four     test samples.
 
@@ -181,6 +208,13 @@ The qualitative results reveal a consistent pattern. The model performs well in 
 
 The model struggles on scenes where a single dominant class covers most of the image and contains internal visual diversity.
 For **Test Sample 3 (mIoU: 0.1605)** and **Test Sample 4 (mIoU: 0.2679)**, the ground truth is predominantly Agriculture. However, agricultural fields contain many different crop types, growth stages, greenhouse structures, and shadows, which look visually distinct from each other. With only 10 labeled points in the Agriculture region, the model sees only a fraction of this visual diversity and misclassifies many Agriculture sub-regions as Forest, Barren, or Road.
+
+*Test Sample 3*
+![assessment_meritinc](test_3_.jpeg)
+
+*Test Sample 3*
+![assessment_meritinc](test_4.jpeg)
+
 A human labeller clicking 10 points in a large agricultural scene will naturally click on only a small sample of the visual variation present. The model therefore cannot learn that all of those variations belong to the same class without seeing more of them.
 
 ## Summary
