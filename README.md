@@ -78,7 +78,7 @@ from those pixels.
 | Standard Cross Entropy |  65,536 | 100% 
 | Partial CE (1 pts/class) | ~6 | 0.0092%
 | Partial CE (3 pts/class) | ~18 | 0.0275%
-| Partial CE (5 pts/class) | ~30 | 00.0458%
+| Partial CE (5 pts/class) | ~30 | 0.0458%
 | Partial CE (3 pts/class) | ~60 | 0.0916%
 
 ## Model Architecture
