@@ -2,7 +2,7 @@
 
 ## Introduction
 
-**Semantic Segementation** is task used to assign class lable to every single pixel in an image, in remote sensing, this means classifying each pixel os a satellye image as one 
+** Semantic Segmentation** is task used to assign class label to every single pixel in an image, in remote sensing, this means classifying each pixel os a satellite image as one 
 of several land types (water, agriculture, road, ect). It is an intensive annotation task because training models are manuallu outlined for every region in the image. 
 
 The standard approach for this task reauires dense masks, where every pixel in the image carries a label, therefore a 1024 X 1024 satellite image has over 1 million labels per image, collecting this amount
@@ -27,12 +27,18 @@ Each image is 1024x1024 pixels and coms with a full pixel-level annotation mask 
 | 3 |  Water
 | 4 |  Barren
 | 5 | Forest
-| 0 |  Agriculture
+| 6 |  Agriculture
 
 The dataset contains 4,191 image-mask pairs in total. We split these into training (70%), validation (15%), and test (15%) sets using a 42 random seed for reproducibility.
 One important data preprocessing step was remapping the original mask values. LoveDA stores class indices starting from 1 (values 1 to 7), but PyTorch's cross-entropy loss expects indices starting from 0. I applied a simple shift during loading:
 
-    ``` mask = np.clip(mask - 1, 0, 6).astype(np.uint8) ```
+| Split | Count |
+|---|---|
+| Train | 2,933 |
+| Validation | 628 |
+| Test | 630 |
+
+``` mask = np.clip(mask - 1, 0, 6).astype(np.uint8) ```
 
 ## Method
 
@@ -79,7 +85,7 @@ from those pixels.
 | Partial CE (1 pts/class) | ~6 | 0.0092%
 | Partial CE (3 pts/class) | ~18 | 0.0275%
 | Partial CE (5 pts/class) | ~30 | 0.0458%
-| Partial CE (3 pts/class) | ~60 | 0.0916%
+| Partial CE (10 pts/class) | ~60 | 0.0916%
 
 ## Model Architecture
 
@@ -88,7 +94,7 @@ spatial detail during decoding.
 The encode progressively downsamples the input from 256x256 to 16x16 while learning increasing abstract features, the decoder then upsamples back to the original resolution, adding features from the encoder at each level
 through skip connections. 
 
-The nodel has 6,857,319 trainable parameters, All parameters are updated during training but gradients flow only from the labeled pixels identified by the point mask
+The model has 6,857,319 trainable parameters, All parameters are updated during training but gradients flow only from the labeled pixels identified by the point mask
 
 ## Training Config:
 
@@ -103,7 +109,6 @@ The nodel has 6,857,319 trainable parameters, All parameters are updated during 
 
 Evaluation was always performed against the full ground truth mask, not the sparse point mask. The model was trained on partial labels but evaluation was applied on complete ground truth, which gives an honest overview of how well it learned to segment the whole image.
 
-![assessment_meritinc](train_&_val.png)
 
 ## Experiments
 I designed two experiments to explore factors that affect the perfomance of Partical Cross Entropy training.
@@ -125,7 +130,7 @@ I designed two experiments to explore factors that affect the perfomance of Part
   ![assessment_meritinc](best_val.png)
 
   The results confirms our hypothesis, increasing points in each class improves mIoU from 0.44 to 0.51,the 10 point configuration perofms best.
-  The anomalu in point 5 compared to 3 point with mIoU 0.48 indicates a high variance inherent in sparse klabel training. It shows that specific pixels that happen to be sampled have stronger influence on what model learns   in each epoch.
+  The anomalu in point 5 compared to 3 point with mIoU 0.48 indicates a high variance inherent in sparse label training. It shows that specific pixels that happen to be sampled have stronger influence on what model learns   in each epoch.
 
   *A key insight from this experiment shows that a single point in a class produces a model that achieves over 43% mIoU, indicating that Partial CE can extract meanignful signal from extremely limited annotations.*
 
@@ -149,10 +154,10 @@ I designed two experiments to explore factors that affect the perfomance of Part
   ![assessment_meritinc](expeiement_2.jpeg)
 
 
-Full supervison achieves the best validation mIoU of 0.5802 while Partial CE achieves 0.5104, with a gao of 0.069, this implies that PArtial CE recovers at 88% of the performace are achieveable with complete dense annotation, while using only 60 labeled pixels per image instead of 65536 (the number of pixels in 256x256 image).
+Full supervison achieves the best validation mIoU of 0.5802 while Partial CE achieves 0.5104, with a gap of 0.0698, this implies that Partial CE recovers 88% of the performance are achieveable with complete dense annotation, while using only 60 labeled pixels per image instead of 65536 (the number of pixels in 256x256 image).
 
 The loss curves in our plot indicates another interesting pattern, the full supervision of the model shows higher variance across epochs, with validation loss jumping noticably between 2 and 9 epochs. Partial CE
-produces a much shoother and more stable loss trajectory, this is due to gradients in full supervison are compyuted from every pixel including ambiguous boundary regions which can intreoduce noise while Partial CE
+produces a much smoother and more stable loss trajectory, this is due to gradients in full supervison are computed from every pixel including ambiguous boundary regions which can introduce noise while Partial CE
 computes its gradients only from a small set therefore not exposed to the noise.
 
 Both models show healthy training behaviour with no sign of overfitting: validation loss stays close to training loss throughout, and mIoU improves consistently.
@@ -160,7 +165,7 @@ Both models show healthy training behaviour with no sign of overfitting: validat
 
 ## Qualitative Results
 
-I used the best Partial CE model on our test data, to see how it would be handling unseen data and ran inference on four inages to visually inspect the quality of model prediction.
+I used the best Partial CE model on our test data, to see how it would be handling unseen data and ran inference on inages to visually inspect the quality of model prediction.
 - **For Test Sample 1**
   
  ![assessment_meritinc](test_sample.jpeg)
@@ -174,7 +179,8 @@ Test Sample 2 (mIoU: 0.4752): The model correctly identifies the large agricultu
 
 The qualitative results reveal a consistent pattern. The model performs well in areas containing multiple visually distinct classes, where each land cover type has a clear and different appearance. Test Sample 2 demonstrates this: water, roads, buildings, and farmland look visually different from each other, and the model's sparse training points were sufficient to learn these distinctions.
 
-The model struggles on scenes where a single dominant class covers most of the image and contains internal visual diversity. In **Test Sample 3 (mIoU: 0.1605)** and **Test Sample 4 (mIoU: 0.2679)**, the ground truth is predominantly Agriculture. However, agricultural fields contain many different crop types, growth stages, greenhouse structures, and shadows, which look visually distinct from each other. With only 10 labeled points in the Agriculture region, the model sees only a fraction of this visual diversity and misclassifies many Agriculture sub-regions as Forest, Barren, or Road.
+The model struggles on scenes where a single dominant class covers most of the image and contains internal visual diversity.
+For **Test Sample 3 (mIoU: 0.1605)** and **Test Sample 4 (mIoU: 0.2679)**, the ground truth is predominantly Agriculture. However, agricultural fields contain many different crop types, growth stages, greenhouse structures, and shadows, which look visually distinct from each other. With only 10 labeled points in the Agriculture region, the model sees only a fraction of this visual diversity and misclassifies many Agriculture sub-regions as Forest, Barren, or Road.
 A human labeller clicking 10 points in a large agricultural scene will naturally click on only a small sample of the visual variation present. The model therefore cannot learn that all of those variations belong to the same class without seeing more of them.
 
 ## Summary
