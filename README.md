@@ -2,14 +2,14 @@
 
 ## Introduction
 
-** Semantic Segmentation** is task used to assign class label to every single pixel in an image, in remote sensing, this means classifying each pixel os a satellite image as one 
-of several land types (water, agriculture, road, ect). It is an intensive annotation task because training models are manuallu outlined for every region in the image. 
+**Semantic Segmentation** is task used to assign class label to every single pixel in an image, in remote sensing, this means classifying each pixel of a satellite image as one 
+of several land types (water, agriculture, road, ect). It is an intensive annotation task because a human annotator must manually outline every region for every region in the image. 
 
 The standard approach for this task reauires dense masks, where every pixel in the image carries a label, therefore a 1024 X 1024 satellite image has over 1 million labels per image, collecting this amount
 of annotation at scale is expensive and time consuming, also prone to errors, lastly very impractical to organisation working with large geographhic datasets. 
 
-Using Sparse Point Labels to train Semantic Segementation
-Our script explores an alternative method of completing tis annotation task, train our model using sparse point labels, where a humman annotator provides a small number of points from the pixels. 
+## Using Sparse Point Labels to train Semantic Segementation
+Our script explores an alternative method of completing this annotation task, train our model using sparse point labels, where a human annotator provides a small number of points from the pixels. 
 How much can our model learn to segment an entire image from a handful of labelled pixels,
 How much performance is lost compared to full dense supervision
 
@@ -17,7 +17,7 @@ How much performance is lost compared to full dense supervision
 ## Dataset
 
 Using the  [**LoveDA**](https://www.kaggle.com/datasets/growinfame/loveda) dataset, publicly available remote sensing benchmark containing aerial images of both urban and rural scenes in China
-Each image is 1024x1024 pixels and coms with a full pixel-level annotation mask covering seven land cover classes. 
+Each image is 1024x1024 pixels and comes with a full pixel-level annotation mask covering seven land cover classes. 
 
 | Class Index | Class Name
 | ------ | ------
@@ -30,13 +30,16 @@ Each image is 1024x1024 pixels and coms with a full pixel-level annotation mask 
 | 6 |  Agriculture
 
 The dataset contains 4,191 image-mask pairs in total. We split these into training (70%), validation (15%), and test (15%) sets using a 42 random seed for reproducibility.
-One important data preprocessing step was remapping the original mask values. LoveDA stores class indices starting from 1 (values 1 to 7), but PyTorch's cross-entropy loss expects indices starting from 0. I applied a simple shift during loading:
 
 | Split | Count |
 |---|---|
 | Train | 2,933 |
 | Validation | 628 |
 | Test | 630 |
+
+One important data preprocessing step was remapping the original mask values. LoveDA stores class indices starting from 1 (values 1 to 7), but PyTorch's cross-entropy loss expects indices starting from 0. I applied a simple shift during loading:
+
+
 
 ``` mask = np.clip(mask - 1, 0, 6).astype(np.uint8) ```
 
@@ -60,7 +63,7 @@ def simulate_point_labels(mask, num_points_per_class=5):
         point_mask[rows[chosen], cols[chosen]] = 1
     return point_mask
 ```
-## Partial Cross-Entropy Loss
+### Partial Cross-Entropy Loss
 
 The standard cross-entropy loss computes a prediction error at every pixel and averages over the entire image. This works well when we have full dense masks but becomes problematic with sparse labels, because pixels with no annotation would contribute meaningless gradients to the training process.
 
@@ -68,7 +71,7 @@ Partial Cross-Entropy solves this by masking out unlabeled pixels before computi
 
 ![assessment_meritinc](formula.png)
 
-Here, we set all the unlabeled pixels position to ```ignore_index = -1``` before passing the target to ```F.cross_entrop``` PyTorch skips positions with the ignore index entirely so no gradient flows
+Here, we set all the unlabeled pixels position to ```ignore_index = -1``` before passing the target to ```F.cross_entropy``` PyTorch skips positions with the ignore index entirely so no gradient flows
 from those pixels. 
 ```
     def partial_cross_entropy_loss(predictions, masks, point_masks, ignore_index=-1):
@@ -94,7 +97,7 @@ from those pixels.
 
 I used the 4-level UNet with skip connections as the segmentation model, UNet was chosen because of its performance with segementation task with sparse data and its skip connection provides a way to preserve
 spatial detail during decoding. 
-The encode progressively downsamples the input from 256x256 to 16x16 while learning increasing abstract features, the decoder then upsamples back to the original resolution, adding features from the encoder at each level
+The encoder progressively downsamples the input from 256x256 to 16x16 while learning increasingly abstract features, the decoder then upsamples back to the original resolution, adding features from the encoder at each level
 through skip connections. 
 The spatial progression through the network is as follows:
 
@@ -127,7 +130,7 @@ Evaluation was always performed against the full ground truth mask, not the spar
 
 
 ## Experiments
-I designed two experiments to explore factors that affect the perfomance of Partical Cross Entropy training.
+I designed two experiments to explore factors that affect the performance of Partical Cross Entropy training.
 
 ### Baseline Training (5 points per class)
 
@@ -142,7 +145,7 @@ model. Both metrics improve consistently with no sign of overfitting.*
 
 ## Experiment 1:
 - Goal: Understand how the number of labeled points per class affects segmentation quality
-- Hypothesis: More labeled points per class should give the model more signal to learn from, resthis should return a higher mean IoU. I expect an incraing trend with diminishing return at higher densities.
+- Hypothesis: More labeled points per class should give the model more signal to learn from, this should return a higher mean IoU. I expect an increasing trend with diminishing return at higher densities.
 - Setup: Train the UNet model on number of points variable with point densities as 1,3,5,10. All other parameters were assigned to constant value
 - Results:
   
@@ -157,21 +160,21 @@ model. Both metrics improve consistently with no sign of overfitting.*
   ![assessment_meritinc](best_val.png)
 
   The results confirms our hypothesis, increasing points in each class improves mIoU from 0.44 to 0.51,the 10 point configuration perofms best.
-  The anomalu in point 5 compared to 3 point with mIoU 0.48 indicates a high variance inherent in sparse label training. It shows that specific pixels that happen to be sampled have stronger influence on what model learns   in each epoch.
+  The anomaly in point 5 compared to 3 point with mIoU 0.48 indicates a high variance inherent in sparse label training. It shows that specific pixels that happen to be sampled have stronger influence on what model learns   in each epoch.
 
-  *A key insight from this experiment shows that a single point in a class produces a model that achieves over 43% mIoU, indicating that Partial CE can extract meanignful signal from extremely limited annotations.*
+  *A key insight from this experiment shows that a single point in a class produces a model that achieves over 43% mIoU, indicating that Partial CE can extract meaningful signal from extremely limited annotations.*
 
 
 ## Experiment 2:
 - Goal: Measure how much performance is lost by using sparse point labels instead of a complete dense annotation.
-- Hypothesis: Full supervision will outperfomr Partial CE because it recieves more gradient signal from every pixel. Teh gap between the two will help us quantify the cost of sparse annotation.
-- Setup: I trained a the UNet model using standard Cross Entropy loss on all pixels and compared it against the best performing Partial CE configuration from our Experiement 1. Both models use the same architecture,
+- Hypothesis: Full supervision will outperform Partial CE because it recieves more gradient signal from every pixel. The gap between the two will help us quantify the cost of sparse annotation.
+- Setup: I trained the UNet model using standard Cross Entropy loss on all pixels and compared it against the best performing Partial CE configuration from our Experiement 1. Both models use the same architecture,
   optimiser. learning rate and number of epochs, point mask argument was ignored for loss function in the full supervision model.
 - Results:
 
     | Condition | Best Validation mIoU
     | ------ | ------
-    | Full Supervion (all pixels) |  0.5802
+    | Full SuperviSIon (all pixels) |  0.5802
     | Partial CE (10pts/class) | 0.5104
     | Gap | 0.0698
     | Partial CE recovery |  88.0%
@@ -186,7 +189,7 @@ model. Both metrics improve consistently with no sign of overfitting.*
 
 *Validation loss (left) and validation mIoU (right) across 10 epochs. Full supervision achieves higher mIoU throughout but Partial CE produces a smoother and more stable loss trajectory.*
 
-Full supervison achieves the best validation mIoU of 0.5802 while Partial CE achieves 0.5104, with a gap of 0.0698, this implies that Partial CE recovers 88% of the performance are achieveable with complete dense annotation, while using only 60 labeled pixels per image instead of 65536 (the number of pixels in 256x256 image).
+Full supervison achieves the best validation mIoU of 0.5802 while Partial CE achieves 0.5104, with a gap of 0.0698, this implies that Partial CE recovers 88% of the performance achieveable with complete dense annotation, while using only 60 labeled pixels per image instead of 65536 (the number of pixels in 256x256 image).
 
 The loss curves in our plot indicates another interesting pattern, the full supervision of the model shows higher variance across epochs, with validation loss jumping noticably between 2 and 9 epochs. Partial CE
 produces a much smoother and more stable loss trajectory, this is due to gradients in full supervison are computed from every pixel including ambiguous boundary regions which can introduce noise while Partial CE
@@ -197,7 +200,7 @@ Both models show healthy training behaviour with no sign of overfitting: validat
 
 ## Qualitative Results
 
-I used the best Partial CE model on our test data, to see how it would be handling unseen data and ran inference on inages to visually inspect the quality of model prediction.
+I used the best Partial CE model on our test data, to see how it would be handling unseen data and ran inference on images to visually inspect the quality of model prediction.
 - **For Test Sample 1**
   
  ![assessment_meritinc](test_sample.jpeg)
@@ -212,8 +215,6 @@ Test Sample 2 (mIoU: 0.4752): The model correctly identifies the large agricultu
 
 The qualitative results reveal a consistent pattern. The model performs well in areas containing multiple visually distinct classes, where each land cover type has a clear and different appearance. Test Sample 2 demonstrates this: water, roads, buildings, and farmland look visually different from each other, and the model's sparse training points were sufficient to learn these distinctions.
 
-The model struggles on scenes where a single dominant class covers most of the image and contains internal visual diversity.
-For **Test Sample 3 (mIoU: 0.1605)** and **Test Sample 4 (mIoU: 0.2679)**, the ground truth is predominantly Agriculture. However, agricultural fields contain many different crop types, growth stages, greenhouse structures, and shadows, which look visually distinct from each other. With only 10 labeled points in the Agriculture region, the model sees only a fraction of this visual diversity and misclassifies many Agriculture sub-regions as Forest, Barren, or Road.
 
 **Test Sample 3**
 
@@ -222,6 +223,9 @@ For **Test Sample 3 (mIoU: 0.1605)** and **Test Sample 4 (mIoU: 0.2679)**, the g
 **Test Sample 4**
 
 ![assessment_meritinc](test_4.png)
+
+The model struggles on scenes where a single dominant class covers most of the image and contains internal visual diversity.
+For *Test Sample 3 (mIoU: 0.1605)* and *Test Sample 4 (mIoU: 0.2679)*, the ground truth is predominantly Agriculture. However, agricultural fields contain many different crop types, growth stages, greenhouse structures, and shadows, which look visually distinct from each other. With only 10 labeled points in the Agriculture region, the model sees only a fraction of this visual diversity and misclassifies many Agriculture sub-regions as Forest, Barren, or Road.
 
 A human labeller clicking 10 points in a large agricultural scene will naturally click on only a small sample of the visual variation present. The model therefore cannot learn that all of those variations belong to the same class without seeing more of them.
 
