@@ -178,8 +178,13 @@ model. Both metrics improve consistently with no sign of overfitting.*
   
   **Visualise Experiment 2**
   
-  ![assessment_meritinc](expeiement_2.jpeg)
+  ![assessment_meritinc](bar_chart.jpeg)
 
+  *Best validation mIoU for full supervision (0.5802) and Partial CE with 10 points per class (0.5104). Partial CE recovers 88% of full supervision performance using 0.006% of available pixel labels.*
+
+![Experiment 2 Training Curves](experiment_2.png)
+
+*Validation loss (left) and validation mIoU (right) across 10 epochs. Full supervision achieves higher mIoU throughout but Partial CE produces a smoother and more stable loss trajectory.*
 
 Full supervison achieves the best validation mIoU of 0.5802 while Partial CE achieves 0.5104, with a gap of 0.0698, this implies that Partial CE recovers 88% of the performance are achieveable with complete dense annotation, while using only 60 labeled pixels per image instead of 65536 (the number of pixels in 256x256 image).
 
