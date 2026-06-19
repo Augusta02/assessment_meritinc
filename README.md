@@ -16,8 +16,8 @@ How much performance is lost compared to full dense supervision
 
 ## Dataset
 
-Using the **LoveDA** dataset, publicly available remote sensing benchmark containing aerial images of both urban and rural scenes in China
-Each image is 1024x1024 pixels and comes with a full pixel-level annotation mask covering seven land cover classes. 
+Using the  [**LoveDA**](https://www.kaggle.com/datasets/growinfame/loveda) dataset, publicly available remote sensing benchmark containing aerial images of both urban and rural scenes in China
+Each image is 1024x1024 pixels and coms with a full pixel-level annotation mask covering seven land cover classes. 
 
 | Class Index | Class Name
 | ------ | ------
