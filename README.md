@@ -57,7 +57,51 @@ The standard cross-entropy loss computes a prediction error at every pixel and a
 
 Partial Cross-Entropy solves this by masking out unlabeled pixels before computing the loss. The formula is:
 
+![assessment_meritinc](formula.png)
 
+Here, we set all the unlabeled pixels position to ```ignore_index = -1``` before passing the target to ```F.cross_entrop``` PyTorch skips positions with the ignore index entirely so no gradient flows
+from those pixels. 
+```
+    def partial_cross_entropy_loss(predictions, masks, point_masks, ignore_index=-1):
+        sparse_gt = masks.clone().long()
+        sparse_gt[point_masks == 0] = ignore_index
+        return F.cross_entropy(
+            predictions,
+            sparse_gt,
+            ignore_index=ignore_index,
+            reduction="mean"
+        )
+    
+```
+| Loss Function | Pixels Used | Coverage
+| ------ | ------
+| Standard Cross Entropy |  Background 
+| 1 | 1,048,576 | 100%
+| 5 |  Road
+| 10 |  Water
+
+
+## Model Architecture
+
+I used the 4-level UNet with skip connections as the segmentation model, UNet was chosen because of its performance with segementation task with sparse data and its skip connection provides a way to preserve
+spatial detail during decoding. 
+The encode progressively downsamples the input from 256x256 to 16x16 while learning increasing abstract features, the decoder then upsamples back to the original resolution, adding features from the encoder at each level
+through skip connections. 
+
+The nodel has 6,857,319 trainable parameters, All parameters are updated during training but gradients flow only from the labeled pixels identified by the point mask
+
+## Training Config:
+
+| Parameter | Value 
+| ------ | ------
+| Optimiser |  Adam
+| Learning Rate | 0.0001
+| Epochs |  10
+| Batch size |  8
+| Image Size |  256x256
+| Evaluation Metric |  Mean IoU (mIoU
+
+Evaluation was always performed against the full ground truth mask, not the sparse point mask. The model was trained on partial labels but evaluation was applied on complete ground truth, which gives an honest overview of how well it learned to segment the whole image.
 
 
 
