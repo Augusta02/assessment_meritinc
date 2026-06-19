@@ -99,9 +99,28 @@ The nodel has 6,857,319 trainable parameters, All parameters are updated during 
 | Epochs |  10
 | Batch size |  8
 | Image Size |  256x256
-| Evaluation Metric |  Mean IoU (mIoU
+| Evaluation Metric |  Mean IoU (mIoU)
 
 Evaluation was always performed against the full ground truth mask, not the sparse point mask. The model was trained on partial labels but evaluation was applied on complete ground truth, which gives an honest overview of how well it learned to segment the whole image.
+
+![assessment_meritinc](train_&_val.png)
+
+## Experiments
+I designed two experiments to explore factors that affect the perfomance of Partical Cross Entropy training.
+
+- Experiment 1:
+      - Goal: Understand how the number of labeled points per class affects segmentation quality
+      - Hypothesis: More labeled points per class should give the model more signal to learn from, resthis should return a higher mean IoU. I expect an incraing trend with diminishing return at higher densities.
+      - Setup: Train the UNet model on number of points variable with point densities as [1,3,5,10]. All other parameters were assigned to constant value [!Training Config]
+      - Results:
+            | Point Per Class | Validation mIoU
+            | ------ | ------
+            | 1 |  0.4393
+            | 3 | 0.4830
+            | 5 |  0.4199
+            | 10 |  0.5104
+            
+
 
 
 
