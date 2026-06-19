@@ -38,7 +38,7 @@ One important data preprocessing step was remapping the original mask values. Lo
 
 ### Simulating Point Labels
 
-The LoveDA dataset provides full dense masks, but our goal is to simulate a weakly-supervised scenario. Created a helper function called **simulate_point_labels** that takes a full mask and randomly samples N pixels per class, returning a binary point mask of the same spatial size. The point mask contains 1 at labeled pixel locations and 0 everywhere else.
+The LoveDA dataset provides full dense masks, but my goal is to simulate a weakly-supervised scenario. I created a helper function called **simulate_point_labels** that takes a full mask and randomly samples N pixels per class, returning a binary point mask of the same spatial size. The point mask contains 1 at labeled pixel locations and 0 everywhere else.
 
 ```
 def simulate_point_labels(mask, num_points_per_class=5):
@@ -75,11 +75,11 @@ from those pixels.
 ```
 | Loss Function | Pixels Used | Coverage
 | ------ | ------
-| Standard Cross Entropy |  Background 
-| 1 | 1,048,576 | 100%
-| 5 |  Road
-| 10 |  Water
-
+| Standard Cross Entropy |  65,536 | 100% 
+| Partial CE (1 pts/class) | ~6 | 0.0092%
+| Partial CE (3 pts/class) | ~18 | 0.0275%
+| Partial CE (5 pts/class) | ~30 | 00.0458%
+| Partial CE (3 pts/class) | ~60 | 0.0916%
 
 ## Model Architecture
 
