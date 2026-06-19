@@ -30,9 +30,9 @@ Each image is 1024x1024 pixels and coms with a full pixel-level annotation mask 
 | 0 |  Agriculture
 
 The dataset contains 4,191 image-mask pairs in total. We split these into training (70%), validation (15%), and test (15%) sets using a 42 random seed for reproducibility.
-One important data preprocessing step was remapping the original mask values. LoveDA stores class indices starting from 1 (values 1 to 7), but PyTorch's cross-entropy loss expects indices starting from 0. We applied a simple shift during loading:
+One important data preprocessing step was remapping the original mask values. LoveDA stores class indices starting from 1 (values 1 to 7), but PyTorch's cross-entropy loss expects indices starting from 0. I applied a simple shift during loading:
 
-``` mask = np.clip(mask - 1, 0, 6).astype(np.uint8) ```
+    ``` mask = np.clip(mask - 1, 0, 6).astype(np.uint8) ```
 
 ## Method
 
