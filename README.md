@@ -9,7 +9,7 @@ The standard approach for this task reauires dense masks, where every pixel in t
 of annotation at scale is expensive and time consuming, also prone to errors, lastly very impractical to organisation working with large geographhic datasets. 
 
 ## Using Sparse Point Labels to train Semantic Segementation
-Our script explores an alternative method of completing this annotation task, train our model using sparse point labels, where a human annotator provides a small number of points from the pixels. 
+The script explores an alternative method of completing this annotation task, train our model using sparse point labels, where a human annotator provides a small number of points from the pixels. 
 How much can our model learn to segment an entire image from a handful of labelled pixels,
 How much performance is lost compared to full dense supervision
 
