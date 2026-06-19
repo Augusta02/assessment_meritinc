@@ -168,8 +168,7 @@ I used the best Partial CE model on our test data, to see how it would be handli
   areas that the ground truth masks as Background.
   
 - **For Test Sample 2-4**
-- 
-![assessment_meritinc](test_3.png)
+![assessment_meritinc](test_3.jpeg)
 
 Test Sample 2 (mIoU: 0.4752): The model correctly identifies the large agriculture region (orange), the water channel (blue), road boundaries (yellow), and building clusters (red). This is the strongest of the four     test samples.
 
