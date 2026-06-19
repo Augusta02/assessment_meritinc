@@ -159,7 +159,7 @@ model. Both metrics improve consistently with no sign of overfitting.*
   **Validation mIoU across point per class**
   ![assessment_meritinc](best_val.png)
 
-  The results confirms our hypothesis, increasing points in each class improves mIoU from 0.44 to 0.51,the 10 point configuration perofms best.
+  The results confirms our hypothesis, increasing points in each class improves mIoU from 0.44 to 0.51,the 10 point configuration performs best.
   The anomaly in point 5 compared to 3 point with mIoU 0.48 indicates a high variance inherent in sparse label training. It shows that specific pixels that happen to be sampled have stronger influence on what model learns   in each epoch.
 
   *A key insight from this experiment shows that a single point in a class produces a model that achieves over 43% mIoU, indicating that Partial CE can extract meaningful signal from extremely limited annotations.*
