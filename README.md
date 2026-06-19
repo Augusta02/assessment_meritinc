@@ -205,7 +205,7 @@ I used the best Partial CE model on our test data, to see how it would be handli
   areas that the ground truth masks as Background.
   
 - **For Test Sample 2**
-![assessment_meritinc](test_2.jpeg)
+![assessment_meritinc](test_2.png)
 
 Test Sample 2 (mIoU: 0.4752): The model correctly identifies the large agriculture region (orange), the water channel (blue), road boundaries (yellow), and building clusters (red). This is the strongest of the four     test samples.
 
@@ -215,10 +215,10 @@ The model struggles on scenes where a single dominant class covers most of the i
 For **Test Sample 3 (mIoU: 0.1605)** and **Test Sample 4 (mIoU: 0.2679)**, the ground truth is predominantly Agriculture. However, agricultural fields contain many different crop types, growth stages, greenhouse structures, and shadows, which look visually distinct from each other. With only 10 labeled points in the Agriculture region, the model sees only a fraction of this visual diversity and misclassifies many Agriculture sub-regions as Forest, Barren, or Road.
 
 *Test Sample 3*
-![assessment_meritinc](test_3_.jpeg)
+![assessment_meritinc](test_3_.png)
 
 *Test Sample 3*
-![assessment_meritinc](test_4.jpeg)
+![assessment_meritinc](test_4.png)
 
 A human labeller clicking 10 points in a large agricultural scene will naturally click on only a small sample of the visual variation present. The model therefore cannot learn that all of those variations belong to the same class without seeing more of them.
 
