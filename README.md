@@ -111,7 +111,7 @@ I designed two experiments to explore factors that affect the perfomance of Part
 ## Experiment 1:
 - Goal: Understand how the number of labeled points per class affects segmentation quality
 - Hypothesis: More labeled points per class should give the model more signal to learn from, resthis should return a higher mean IoU. I expect an incraing trend with diminishing return at higher densities.
-- Setup: Train the UNet model on number of points variable with point densities as [1,3,5,10]. All other parameters were assigned to constant value [!Training Config]
+- Setup: Train the UNet model on number of points variable with point densities as 1,3,5,10. All other parameters were assigned to constant value
 - Results:
   
     | Point Per Class | Validation mIoU
