@@ -3,9 +3,9 @@
 ## Introduction
 
 **Semantic Segmentation** is task used to assign class label to every single pixel in an image, in remote sensing, this means classifying each pixel of a satellite image as one 
-of several land types (water, agriculture, road, ect). It is an intensive annotation task because a human annotator must manually outline every region for every region in the image. 
+of several land types (water, agriculture, road, ect). It is an intensive annotation task because a human annotator must manually outline for every region in the image. 
 
-The standard approach for this task reauires dense masks, where every pixel in the image carries a label, therefore a 1024 X 1024 satellite image has over 1 million labels per image, collecting this amount
+The standard approach for this to be achieved requires dense masks, where every pixel in the image carries a label, therefore a 1024 X 1024 satellite image has over 1 million labels per image, collecting this amount
 of annotation at scale is expensive and time consuming, also prone to errors, lastly very impractical to organisation working with large geographhic datasets. 
 
 ## Using Sparse Point Labels to train Semantic Segementation
